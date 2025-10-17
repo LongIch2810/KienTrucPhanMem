@@ -1,0 +1,21 @@
+# Build output
+target/
+build/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Git
+.git/
+.gitignore
+
+# Docker files & env
+Dockerfile
+docker-compose*.yml
+.env
+
+# Logs & tmp
+*.log
+*.tmp

@@ -1,0 +1,144 @@
+version: "3.9"
+
+services:
+  order-service-db:
+    image: postgres:15
+    container_name: order-service-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: order_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - order_db_data:/var/lib/postgresql/data
+      - ./order-service/src/main/resources/db/revert:/revert
+    networks:
+      - order-db-network
+
+  pg-admin-ui:
+    image: dpage/pgadmin4
+    container_name: pg-admin-ui
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@local.com
+      - PGADMIN_DEFAULT_PASSWORD=admin123
+    ports:
+      - "8001:80"
+    depends_on:
+      - order-service-db
+    networks:
+      - order-db-network
+
+  kafka-1:
+    image: bitnamilegacy/kafka:latest
+    container_name: kafka-1
+    restart: unless-stopped
+    environment:
+      - KAFKA_CFG_NODE_ID=1
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://0.0.0.0:9094
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka-1:9092,EXTERNAL://localhost:9094
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka-1:9093
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    ports:
+      - 9094:9094
+    networks:
+      - kafka-network
+
+  kafka-admin-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-admin-ui
+    depends_on:
+      - kafka-1
+    ports:
+      - "8081:8080"
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local-cluster
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka-1:9092
+      - KAFKA_CLUSTERS_0_READONLY=false
+      - KAFKA_CLUSTERS_0_TOPIC_AUTO_CREATE=true
+    networks:
+      - kafka-network
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    depends_on:
+      - service-discovery
+      - order-service
+    ports:
+      - "8000:8000"
+    environment:
+      SERVER_PORT: 8000
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-discovery:8761/eureka
+    networks:
+      - backend-network
+
+  service-discovery:
+    build:
+      context: ./service-discovery
+      dockerfile: Dockerfile
+    container_name: service-discovery
+    ports:
+      - "8761:8761"
+    networks:
+      - backend-network
+
+
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    container_name: order-service
+    restart: unless-stopped
+    depends_on:
+      - order-service-db
+      - kafka-1
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://order-service-db:5432/order_db?TimeZone=Asia/Ho_Chi_Minh
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka-1:9092
+
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-discovery:8761/eureka
+      SERVER_PORT: 8080
+    networks:
+      - kafka-network
+      - order-db-network
+      - backend-network
+
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    container_name: notification-service
+    depends_on:
+      - kafka-1
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka-1:9092
+      SERVER_PORT: 8082
+    networks:
+      - kafka-network
+      - backend-network
+
+volumes:
+  order_db_data:
+
+networks:
+  kafka-network:
+    driver: bridge
+  order-db-network:
+    driver: bridge
+  backend-network:
+    driver: bridge

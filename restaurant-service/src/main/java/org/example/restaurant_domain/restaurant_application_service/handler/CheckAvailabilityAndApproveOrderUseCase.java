@@ -125,6 +125,7 @@ public class CheckAvailabilityAndApproveOrderUseCase implements ICheckAvailabili
             int orderedQuantity = orderItem.getQuantity();
 
             menuItem.setQuantity(new Quantity(currentQuantity - orderedQuantity));
+            menuItem.setAvailable(menuItem.getQuantity().getValue() != 0);
             menuItemRepoGateway.save(menuItem);
         }
 

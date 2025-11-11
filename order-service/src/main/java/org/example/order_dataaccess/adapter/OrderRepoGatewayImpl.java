@@ -5,6 +5,7 @@ import org.example.order_dataaccess.mapper.OrderMapper;
 import org.example.order_dataaccess.repository.OrderRepository;
 import org.example.order_domain.order_domain_core.entity.Order;
 import org.example.order_domain.order_domain_core.gateway.OrderRepoGateway;
+import org.example.order_domain.order_domain_core.valueobject.OrderId;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -24,8 +25,8 @@ public class OrderRepoGatewayImpl implements OrderRepoGateway {
     }
 
     @Override
-    public Optional<Order> findById(Long id) {
-        Optional<OrderEntity> orderEntity = orderRepository.findById(id);
+    public Optional<Order> findById(OrderId id) {
+        Optional<OrderEntity> orderEntity = orderRepository.findById(id.getValue());
         return orderEntity.map(OrderMapper::toOrderDomain);
     }
 }

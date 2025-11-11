@@ -1,81 +1,80 @@
 package org.example.order_domain.order_application_service.dto;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class OrderResponseDto {
-    private final Long orderId;
-    private final Long userId;
-    private final BigDecimal totalAmount;
-    private final BigDecimal discountAmount;
-    private final BigDecimal finalAmount;
+    private final UUID id;
+    private final UUID customerId;
+    private final UUID restaurantId;
+    private final UUID trackingId;
+    private final BigDecimal price;
     private final String orderStatus;
-    private final String paymentStatus;
-    private final String paymentMethod;
+    private final String failureMessages;
+    private final LocalDateTime createdAt;
     private List<OrderItemDto> items = new ArrayList<>();
 
-    public OrderResponseDto(Long orderId, Long userId, BigDecimal totalAmount,
-                            BigDecimal discountAmount, BigDecimal finalAmount,
-                            String orderStatus,String paymentStatus,
-                            String paymentMethod,List<OrderItemDto> items) {
-        this.orderId = orderId;
-        this.userId = userId;
-        this.totalAmount = totalAmount;
-
-        this.discountAmount = discountAmount;
-        this.finalAmount = finalAmount;
+    public OrderResponseDto(UUID id, UUID customerId, UUID restaurantId,
+                            UUID trackingId, BigDecimal price, String orderStatus,
+                            String failureMessages, LocalDateTime createdAt,
+                            List<OrderItemDto> items) {
+        this.id = id;
+        this.customerId = customerId;
+        this.restaurantId = restaurantId;
+        this.trackingId = trackingId;
+        this.price = price;
         this.orderStatus = orderStatus;
-        this.paymentStatus = paymentStatus;
-        this.paymentMethod = paymentMethod;
+        this.failureMessages = failureMessages;
+        this.createdAt = createdAt;
         this.items = items;
     }
 
-    public OrderResponseDto(Long orderId, Long userId, BigDecimal totalAmount,
-                            BigDecimal discountAmount, BigDecimal finalAmount,
-                            String orderStatus,String paymentStatus,
-                            String paymentMethod) {
-        this.orderId = orderId;
-        this.userId = userId;
-        this.totalAmount = totalAmount;
-
-        this.discountAmount = discountAmount;
-        this.finalAmount = finalAmount;
+    public OrderResponseDto(UUID id, UUID customerId, UUID restaurantId,
+                            UUID trackingId, BigDecimal price, String orderStatus,
+                            String failureMessages, LocalDateTime createdAt) {
+        this.id = id;
+        this.customerId = customerId;
+        this.restaurantId = restaurantId;
+        this.trackingId = trackingId;
+        this.price = price;
         this.orderStatus = orderStatus;
-        this.paymentStatus = paymentStatus;
-        this.paymentMethod = paymentMethod;
+        this.failureMessages = failureMessages;
+        this.createdAt = createdAt;
     }
 
-    public Long getOrderId() {
-        return orderId;
+    public UUID getId() {
+        return id;
     }
 
-    public Long getUserId() {
-        return userId;
+    public UUID getCustomerId() {
+        return customerId;
     }
 
-    public BigDecimal getTotalAmount() {
-        return totalAmount;
+    public UUID getRestaurantId() {
+        return restaurantId;
     }
 
-    public BigDecimal getDiscountAmount() {
-        return discountAmount;
+    public UUID getTrackingId() {
+        return trackingId;
     }
 
-    public BigDecimal getFinalAmount() {
-        return finalAmount;
+    public BigDecimal getPrice() {
+        return price;
     }
 
     public String getOrderStatus() {
         return orderStatus;
     }
 
-    public String getPaymentStatus() {
-        return paymentStatus;
+    public String getFailureMessages() {
+        return failureMessages;
     }
 
-    public String getPaymentMethod() {
-        return paymentMethod;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
     public List<OrderItemDto> getItems() {

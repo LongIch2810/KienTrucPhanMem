@@ -2,8 +2,6 @@ package org.example.order_dataaccess.entity;
 
 import jakarta.persistence.*;
 import org.example.order_domain.order_domain_core.enums.OrderStatus;
-import org.example.order_domain.order_domain_core.enums.PaymentMethod;
-import org.example.order_domain.order_domain_core.enums.PaymentStatus;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -11,118 +9,109 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "orders")
 public class OrderEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", columnDefinition = "UUID")
+    private UUID id;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItemEntity> orderItemEntities = new ArrayList<>();
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @Column(name = "customer_id", nullable = false, columnDefinition = "UUID")
+    private UUID customerId;
 
-    @Column(name = "total_amount", nullable = false)
-    private BigDecimal totalAmount;
+    @Column(name = "restaurant_id", nullable = false, columnDefinition = "UUID")
+    private UUID restaurantId;
 
-    @Column(name = "discount_amount", nullable = false)
-    private BigDecimal discountAmount;
+    @Column(name = "tracking_id", nullable = false, columnDefinition = "UUID")
+    private UUID trackingId;
 
-    @Column(name = "final_amount", nullable = false)
-    private BigDecimal finalAmount;
-
-    @Column(name = "currency", length = 10, nullable = false)
-    private String currency;
+    @Column(name = "price", nullable = false, precision = 10, scale = 2)
+    private BigDecimal price;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "order_status",columnDefinition = "order_status_enum", nullable = false)
+    @Column(name = "order_status", nullable = false, columnDefinition = "order_status")
     private OrderStatus orderStatus = OrderStatus.PENDING;
 
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "payment_status",columnDefinition = "payment_status_enum", nullable = false)
-    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
+    @Column(name = "failure_messages")
+    private String failureMessages;
 
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "payment_method",columnDefinition = "payment_method_enum", nullable = false)
-    private PaymentMethod paymentMethod = PaymentMethod.COD;
-
-    @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @Column(name = "created_at", nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
     private LocalDateTime createdAt;
-
-    @Column(name = "updated_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime updatedAt;
 
     // 📝 Constructors
     public OrderEntity() {
     }
 
-    // 👉 Có thể thêm constructor đầy đủ nếu cần
-    public OrderEntity(Long userId, BigDecimal totalAmount, BigDecimal discountAmount,
-                       BigDecimal finalAmount, String currency,
-                       OrderStatus orderStatus, PaymentStatus paymentStatus,
-                       PaymentMethod paymentMethod) {
-        this.userId = userId;
-        this.totalAmount = totalAmount;
-        this.discountAmount = discountAmount;
-        this.finalAmount = finalAmount;
-        this.currency = currency;
+    public OrderEntity(UUID id, UUID customerId, UUID restaurantId, UUID trackingId,
+                       BigDecimal price, OrderStatus orderStatus, String failureMessages) {
+        this.id = id;
+        this.customerId = customerId;
+        this.restaurantId = restaurantId;
+        this.trackingId = trackingId;
+        this.price = price;
         this.orderStatus = orderStatus;
-        this.paymentStatus = paymentStatus;
-        this.paymentMethod = paymentMethod;
+        this.failureMessages = failureMessages;
         this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+    }
+
+    public OrderEntity(UUID customerId, UUID restaurantId, UUID trackingId,
+                       BigDecimal price, OrderStatus orderStatus, String failureMessages) {
+        this.customerId = customerId;
+        this.restaurantId = restaurantId;
+        this.trackingId = trackingId;
+        this.price = price;
+        this.orderStatus = orderStatus;
+        this.failureMessages = failureMessages;
+        this.createdAt = LocalDateTime.now();
     }
 
     // 🧠 Getter/Setter
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public Long getUserId() {
-        return userId;
+    public void setId(UUID id) {
+        this.id = id;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public UUID getCustomerId() {
+        return customerId;
     }
 
-    public BigDecimal getTotalAmount() {
-        return totalAmount;
+    public void setCustomerId(UUID customerId) {
+        this.customerId = customerId;
     }
 
-    public void setTotalAmount(BigDecimal totalAmount) {
-        this.totalAmount = totalAmount;
+    public UUID getRestaurantId() {
+        return restaurantId;
     }
 
-    public BigDecimal getDiscountAmount() {
-        return discountAmount;
+    public void setRestaurantId(UUID restaurantId) {
+        this.restaurantId = restaurantId;
     }
 
-    public void setDiscountAmount(BigDecimal discountAmount) {
-        this.discountAmount = discountAmount;
+    public UUID getTrackingId() {
+        return trackingId;
     }
 
-    public BigDecimal getFinalAmount() {
-        return finalAmount;
+    public void setTrackingId(UUID trackingId) {
+        this.trackingId = trackingId;
     }
 
-    public void setFinalAmount(BigDecimal finalAmount) {
-        this.finalAmount = finalAmount;
+    public BigDecimal getPrice() {
+        return price;
     }
 
-    public String getCurrency() {
-        return currency;
-    }
-
-    public void setCurrency(String currency) {
-        this.currency = currency;
+    public void setPrice(BigDecimal price) {
+        this.price = price;
     }
 
     public OrderStatus getOrderStatus() {
@@ -133,20 +122,12 @@ public class OrderEntity {
         this.orderStatus = orderStatus;
     }
 
-    public PaymentStatus getPaymentStatus() {
-        return paymentStatus;
+    public String getFailureMessages() {
+        return failureMessages;
     }
 
-    public void setPaymentStatus(PaymentStatus paymentStatus) {
-        this.paymentStatus = paymentStatus;
-    }
-
-    public PaymentMethod getPaymentMethod() {
-        return paymentMethod;
-    }
-
-    public void setPaymentMethod(PaymentMethod paymentMethod) {
-        this.paymentMethod = paymentMethod;
+    public void setFailureMessages(String failureMessages) {
+        this.failureMessages = failureMessages;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -155,14 +136,6 @@ public class OrderEntity {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
     }
 
     public List<OrderItemEntity> getOrderItemEntities() {

@@ -18,7 +18,7 @@ public class OrderController {
     }
 
     @GetMapping("/{id}")
-    public OrderResponseDto getOrderById(@PathVariable Long id) {
+    public OrderResponseDto getOrderById(@PathVariable java.util.UUID id) {
         return getOrderDetailUseCase.execute(id);
     }
 

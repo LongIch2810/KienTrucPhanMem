@@ -18,7 +18,7 @@ COPY pom.xml .
 # COPY order-container/pom.xml order-container/
 
 # Tải dependencies để tận dụng cache Docker
-RUN mvn dependency:go-offline -B
+RUN mvn dependency:resolve -B -U
 
 # Copy toàn bộ source code vào container
 COPY . .

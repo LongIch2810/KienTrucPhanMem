@@ -13,9 +13,38 @@ services:
       - "5432:5432"
     volumes:
       - order_db_data:/var/lib/postgresql/data
-      - ./order-service/src/main/resources/db/revert:/revert
     networks:
       - order-db-network
+
+  payment-service-db:
+    image: postgres:15
+    container_name: payment-service-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: payment_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - payment_db_data:/var/lib/postgresql/data
+    networks:
+      - payment-db-network
+
+  restaurant-service-db:
+    image: postgres:15
+    container_name: restaurant-service-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: restaurant_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - restaurant_db_data:/var/lib/postgresql/data
+    networks:
+      - restaurant-db-network
 
   pg-admin-ui:
     image: dpage/pgadmin4
@@ -27,8 +56,12 @@ services:
       - "8001:80"
     depends_on:
       - order-service-db
+      - payment-service-db
+      - restaurant-service-db
     networks:
       - order-db-network
+      - payment-db-network
+      - restaurant-db-network
 
   kafka-1:
     image: bitnamilegacy/kafka:latest
@@ -72,6 +105,8 @@ services:
     depends_on:
       - service-discovery
       - order-service
+      - payment-service
+      - restaurant-service
     ports:
       - "8000:8000"
     environment:
@@ -90,7 +125,6 @@ services:
     networks:
       - backend-network
 
-
   order-service:
     build:
       context: ./order-service
@@ -100,15 +134,14 @@ services:
     depends_on:
       - order-service-db
       - kafka-1
+      - service-discovery
     ports:
       - "8080:8080"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://order-service-db:5432/order_db?TimeZone=Asia/Ho_Chi_Minh
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
-
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka-1:9092
-
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-discovery:8761/eureka
       SERVER_PORT: 8080
     networks:
@@ -116,29 +149,86 @@ services:
       - order-db-network
       - backend-network
 
+  payment-service:
+    build:
+      context: ./payment-service
+      dockerfile: Dockerfile
+    container_name: payment-service
+    restart: unless-stopped
+    depends_on:
+      - payment-service-db
+      - kafka-1
+      - service-discovery
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://payment-service-db:5432/payment_db?TimeZone=Asia/Ho_Chi_Minh
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka-1:9092
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-discovery:8761/eureka
+      SERVER_PORT: 8082
+    networks:
+      - kafka-network
+      - payment-db-network
+      - backend-network
+
+  restaurant-service:
+    build:
+      context: ./restaurant-service
+      dockerfile: Dockerfile
+    container_name: restaurant-service
+    restart: unless-stopped
+    depends_on:
+      - restaurant-service-db
+      - kafka-1
+      - service-discovery
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://restaurant-service-db:5432/restaurant_db?TimeZone=Asia/Ho_Chi_Minh
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka-1:9092
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-discovery:8761/eureka
+      SERVER_PORT: 8083
+    networks:
+      - kafka-network
+      - restaurant-db-network
+      - backend-network
+
   notification-service:
     build:
       context: ./notification-service
       dockerfile: Dockerfile
     container_name: notification-service
+    restart: unless-stopped
     depends_on:
       - kafka-1
+      - service-discovery
     ports:
-      - "8082:8082"
+      - "8084:8084"
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka-1:9092
-      SERVER_PORT: 8082
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-discovery:8761/eureka
+      SERVER_PORT: 8084
     networks:
       - kafka-network
       - backend-network
 
 volumes:
   order_db_data:
+  payment_db_data:
+  restaurant_db_data:
 
 networks:
   kafka-network:
     driver: bridge
   order-db-network:
+    driver: bridge
+  payment-db-network:
+    driver: bridge
+  restaurant-db-network:
     driver: bridge
   backend-network:
     driver: bridge

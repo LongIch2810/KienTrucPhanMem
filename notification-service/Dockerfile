@@ -18,7 +18,7 @@ COPY pom.xml .
 # COPY order-container/pom.xml order-container/
 
 # Tải dependencies để tận dụng cache Docker
-RUN mvn dependency:go-offline -B
+RUN mvn dependency:resolve -B -U
 
 # Copy toàn bộ source code vào container
 COPY . .
@@ -45,12 +45,12 @@ RUN chown -R appuser:appgroup /app
 # Chuyển sang user không root
 USER appuser
 
-# Mở cổng ứng dụng (Spring Boot mặc định là 8080, nếu bạn dùng 8181 thì sửa lại)
-EXPOSE 8082
+# Mở cổng ứng dụng
+EXPOSE 8084
 
 # Health check — kiểm tra endpoint /actuator/health mỗi 30s
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8082/actuator/health || exit 1
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8084/actuator/health || exit 1
 
 # Lệnh chạy ứng dụng
 ENTRYPOINT ["java", "-jar", "app.jar"]

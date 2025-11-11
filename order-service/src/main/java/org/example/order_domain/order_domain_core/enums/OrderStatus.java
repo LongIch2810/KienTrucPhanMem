@@ -1,13 +1,10 @@
 package org.example.order_domain.order_domain_core.enums;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-
 public enum OrderStatus {
     PENDING("PENDING"),
-    CONFIRMED("CONFIRMED"),
-    SHIPPED("SHIPPED"),
-    DELIVERED("DELIVERED"),
+    PAID("PAID"),
+    APPROVED("APPROVED"),
+    CANCELLING("CANCELLING"),
     CANCELLED("CANCELLED");
     private final String value;
     private OrderStatus(String value) {

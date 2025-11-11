@@ -1,42 +1,53 @@
 package org.example.order_domain.order_domain_core.entity;
 
-import org.example.order_domain.order_domain_core.valieobject.Quantity;
-
-import java.math.BigDecimal;
+import org.example.order_domain.order_domain_core.valueobject.Money;
+import org.example.order_domain.order_domain_core.valueobject.OrderId;
+import org.example.order_domain.order_domain_core.valueobject.ProductId;
+import org.example.order_domain.order_domain_core.valueobject.Quantity;
 
 public class OrderItem {
-    private Long orderId;
-    private final Long productId;
-    private final BigDecimal price;
+    private OrderId orderId;
+    private final ProductId productId;
+    private final Money price;
     private final Quantity quantity;
+    private final Money subTotal;
 
-    public OrderItem(Long productId, Quantity quantity, BigDecimal price) {
+    public OrderItem(ProductId productId, Quantity quantity, Money price) {
         this.productId = productId;
         this.quantity = quantity;
         this.price = price;
+        this.subTotal = price.multiply(quantity.getValue());
     }
 
-    public OrderItem(Long orderId,Long productId, Quantity quantity, BigDecimal price) {
+    public OrderItem(OrderId orderId, ProductId productId, Quantity quantity, Money price) {
         this.orderId = orderId;
         this.productId = productId;
         this.quantity = quantity;
         this.price = price;
+        this.subTotal = price.multiply(quantity.getValue());
     }
 
-
-    public Long getOrderId() {
+    public OrderId getOrderId() {
         return orderId;
     }
 
-    public Long getProductId() {
+    public void setOrderId(OrderId orderId) {
+        this.orderId = orderId;
+    }
+
+    public ProductId getProductId() {
         return productId;
     }
 
-    public BigDecimal getPrice() {
+    public Money getPrice() {
         return price;
     }
 
     public Quantity getQuantity() {
         return quantity;
+    }
+
+    public Money getSubTotal() {
+        return subTotal;
     }
 }

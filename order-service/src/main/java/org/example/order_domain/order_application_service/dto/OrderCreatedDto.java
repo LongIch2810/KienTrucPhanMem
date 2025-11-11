@@ -6,31 +6,19 @@ import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class OrderCreatedDto {
 
-    @NotNull(message = "User ID không được null")
-    private Long userId;
+    @NotNull(message = "Customer ID không được null")
+    private UUID customerId;
 
-    @NotNull(message = "Tổng tiền không được null")
-    @DecimalMin(value = "0.0", inclusive = false, message = "Tổng tiền phải > 0")
-    private BigDecimal totalAmount;
+    @NotNull(message = "Restaurant ID không được null")
+    private UUID restaurantId;
 
-    @NotNull(message = "Số tiền giảm giá không được null")
-    @DecimalMin(value = "0.0", inclusive = true, message = "Số tiền giảm giá phải >= 0")
-    private BigDecimal discountAmount;
-
-    @NotNull(message = "Số tiền cuối cùng không được null")
-    @DecimalMin(value = "0.0", inclusive = false, message = "Số tiền cuối cùng phải > 0")
-    private BigDecimal finalAmount;
-
-    @NotBlank(message = "Đơn vị tiền tệ không được để trống")
-    @Pattern(regexp = "^[A-Z]{3}$", message = "Đơn vị tiền tệ phải là mã ISO 3 ký tự (VD: USD, VND)")
-    private String currency;
-
-
-    @NotBlank(message = "Phương thức thanh toán không được để trống")
-    private String paymentMethod;
+    @NotNull(message = "Giá không được null")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Giá phải > 0")
+    private BigDecimal price;
 
     @NotEmpty(message = "Danh sách sản phẩm không được để trống")
     @Valid
@@ -40,49 +28,46 @@ public class OrderCreatedDto {
     }
 
     public OrderCreatedDto(
-            Long userId,
-            BigDecimal totalAmount,
-            BigDecimal discountAmount,
-            BigDecimal finalAmount,
-            String currency,
-            String paymentMethod,
+            UUID customerId,
+            UUID restaurantId,
+            BigDecimal price,
             List<OrderItemDto> orderItems
     ) {
-        this.userId = userId;
-        this.totalAmount = totalAmount;
-        this.discountAmount = discountAmount;
-        this.finalAmount = finalAmount;
-        this.currency = currency;
-        this.paymentMethod = paymentMethod;
+        this.customerId = customerId;
+        this.restaurantId = restaurantId;
+        this.price = price;
         this.orderItems = orderItems;
     }
 
-    public Long getUserId() {
-        return userId;
+    public UUID getCustomerId() {
+        return customerId;
     }
 
-    public BigDecimal getTotalAmount() {
-        return totalAmount;
+    public void setCustomerId(UUID customerId) {
+        this.customerId = customerId;
     }
 
-    public BigDecimal getDiscountAmount() {
-        return discountAmount;
+    public UUID getRestaurantId() {
+        return restaurantId;
     }
 
-    public BigDecimal getFinalAmount() {
-        return finalAmount;
+    public void setRestaurantId(UUID restaurantId) {
+        this.restaurantId = restaurantId;
     }
 
-    public String getCurrency() {
-        return currency;
+    public BigDecimal getPrice() {
+        return price;
     }
 
-
-    public String getPaymentMethod() {
-        return paymentMethod;
+    public void setPrice(BigDecimal price) {
+        this.price = price;
     }
 
     public List<OrderItemDto> getOrderItems() {
         return orderItems;
+    }
+
+    public void setOrderItems(List<OrderItemDto> orderItems) {
+        this.orderItems = orderItems;
     }
 }

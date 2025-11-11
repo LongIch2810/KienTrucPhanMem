@@ -3,7 +3,7 @@ package org.example.order_dataaccess.entity;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name="order_items")
@@ -12,35 +12,38 @@ public class OrderItemEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long productId;
+    @Column(name = "product_id", nullable = false, columnDefinition = "UUID")
+    private UUID productId;
+    
+    @Column(name = "quantity", nullable = false)
     private Integer quantity;
+    
+    @Column(name = "price", nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    @Column(name = "sub_total", nullable = false, precision = 10, scale = 2)
+    private BigDecimal subTotal;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id", nullable = false)
+    @JoinColumn(name = "order_id", nullable = false, columnDefinition = "UUID")
     private OrderEntity order;
 
 
     public OrderItemEntity() {}
 
-    public OrderItemEntity(OrderEntity order, Long productId, Integer quantity, BigDecimal price) {
+    public OrderItemEntity(OrderEntity order, UUID productId, Integer quantity, BigDecimal price) {
         this.order = order;
         this.productId = productId;
         this.quantity = quantity;
         this.price = price;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        this.subTotal = price.multiply(BigDecimal.valueOf(quantity));
     }
 
-    public OrderItemEntity(Long productId, Integer quantity, BigDecimal price) {
+    public OrderItemEntity(UUID productId, Integer quantity, BigDecimal price) {
         this.productId = productId;
         this.quantity = quantity;
         this.price = price;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        this.subTotal = price.multiply(BigDecimal.valueOf(quantity));
     }
 
     public Long getId() {
@@ -59,11 +62,11 @@ public class OrderItemEntity {
         this.order = order;
     }
 
-    public Long getProductId() {
+    public UUID getProductId() {
         return productId;
     }
 
-    public void setProductId(Long productId) {
+    public void setProductId(UUID productId) {
         this.productId = productId;
     }
 
@@ -73,6 +76,10 @@ public class OrderItemEntity {
 
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
+        // Recalculate subTotal when quantity changes
+        if (this.price != null) {
+            this.subTotal = this.price.multiply(BigDecimal.valueOf(quantity));
+        }
     }
 
     public BigDecimal getPrice() {
@@ -81,22 +88,18 @@ public class OrderItemEntity {
 
     public void setPrice(BigDecimal price) {
         this.price = price;
+        // Recalculate subTotal when price changes
+        if (this.quantity != null) {
+            this.subTotal = price.multiply(BigDecimal.valueOf(quantity));
+        }
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    public BigDecimal getSubTotal() {
+        return subTotal;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
+    public void setSubTotal(BigDecimal subTotal) {
+        this.subTotal = subTotal;
     }
 
     public OrderEntity getOrder() {

@@ -1,5 +1,5 @@
 server:
-  port: 8082
+  port: ${SERVER_PORT:8084}
 
 spring:
   application:
@@ -7,6 +7,8 @@ spring:
 
   kafka:
     bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9094}
+    admin:
+      auto-create: true
     consumer:
       group-id: notification-group
       auto-offset-reset: earliest
@@ -15,10 +17,37 @@ spring:
       properties:
         spring.json.trusted.packages: "*"
         spring.json.type.mapping: >
-            org.example.order_domain.order_domain_core.event.OrderCreatedEvent:org.example.notification_domain.notification_domain_core.event.OrderCreatedEvent
+          orderCreatedEvent:org.example.notification_domain.notification_domain_core.event.OrderCreatedEvent,
+          paymentCompletedEvent:org.example.notification_domain.notification_domain_core.event.PaymentCompletedEvent,
+          paymentFailedEvent:org.example.notification_domain.notification_domain_core.event.PaymentFailedEvent,
+          orderCancelledEvent:org.example.notification_domain.notification_domain_core.event.OrderCancelledEvent,
+          restaurantApprovedEvent:org.example.notification_domain.notification_domain_core.event.RestaurantApprovedEvent,
+          restaurantRejectedEvent:org.example.notification_domain.notification_domain_core.event.RestaurantRejectedEvent
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 1
+      enable.idempotence: true
+      max-in-flight-requests-per-connection: 5
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:8761/eureka}
+  instance:
+    prefer-ip-address: false
+    instance-id: ${spring.application.name}:${server.port}
+    hostname: notification-service
+
 kafka:
   topics:
     order-created: order.created
+    payment-completed: payment.completed
+    payment-failed: payment.failed
+    order-cancelled: order.cancelled
+    restaurant-approved: restaurant.approved
+    restaurant-rejected: restaurant.rejected
 
 logging:
   level:

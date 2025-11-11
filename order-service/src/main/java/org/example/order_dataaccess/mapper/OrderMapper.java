@@ -4,13 +4,13 @@ import org.example.order_dataaccess.entity.OrderEntity;
 import org.example.order_dataaccess.entity.OrderItemEntity;
 import org.example.order_domain.order_domain_core.entity.Order;
 import org.example.order_domain.order_domain_core.entity.OrderItem;
-import org.example.order_domain.order_domain_core.enums.OrderStatus;
-import org.example.order_domain.order_domain_core.enums.PaymentMethod;
-import org.example.order_domain.order_domain_core.enums.PaymentStatus;
-import org.example.order_domain.order_domain_core.valieobject.Money;
-import org.example.order_domain.order_domain_core.valieobject.Quantity;
+import org.example.order_domain.order_domain_core.valueobject.CustomerId;
+import org.example.order_domain.order_domain_core.valueobject.Money;
+import org.example.order_domain.order_domain_core.valueobject.OrderId;
+import org.example.order_domain.order_domain_core.valueobject.ProductId;
+import org.example.order_domain.order_domain_core.valueobject.Quantity;
+import org.example.order_domain.order_domain_core.valueobject.RestaurantId;
 
-import java.util.Currency;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,21 +19,21 @@ public class OrderMapper {
         if (entity == null) return null;
         List<OrderItem> orderItems = entity.getOrderItemEntities().stream()
                 .map(itemEntity -> new OrderItem(
-                        itemEntity.getId(), // Giả định OrderItem domain cũng có ID
-                        itemEntity.getProductId(),
+                        new OrderId(entity.getId()),
+                        new ProductId(itemEntity.getProductId()),
                         new Quantity(itemEntity.getQuantity()),
-                        itemEntity.getPrice()
+                        new Money(itemEntity.getPrice())
                 ))
                 .collect(Collectors.toList());
         return new Order(
-                entity.getId(),
-                entity.getUserId(),
-                new Money(entity.getTotalAmount(), Currency.getInstance(entity.getCurrency())),
-                new Money(entity.getDiscountAmount(), Currency.getInstance(entity.getCurrency())),
-                new Money(entity.getFinalAmount(), Currency.getInstance(entity.getCurrency())),
+                entity.getId() != null ? new OrderId(entity.getId()) : null,
+                new CustomerId(entity.getCustomerId()),
+                new RestaurantId(entity.getRestaurantId()),
+                entity.getTrackingId(),
+                new Money(entity.getPrice()),
                 entity.getOrderStatus(),
-                entity.getPaymentStatus(),
-                entity.getPaymentMethod(),
+                entity.getFailureMessages(),
+                entity.getCreatedAt(),
                 orderItems
                 );
     }
@@ -41,22 +41,27 @@ public class OrderMapper {
     static public OrderEntity toOrderEntity(Order domain) {
         if (domain == null) return null;
         OrderEntity orderEntity = new OrderEntity(
-                domain.getUserId(),
-                domain.getTotalAmount().getAmount(),
-                domain.getDiscountAmount().getAmount(),
-                domain.getFinalAmount().getAmount(),
-                domain.getTotalAmount().getCurrency().getCurrencyCode(),
+                domain.getId() != null ? domain.getId().getValue() : null,
+                domain.getCustomerId().getValue(),
+                domain.getRestaurantId().getValue(),
+                domain.getTrackingId(),
+                domain.getPrice().getAmount(),
                 domain.getOrderStatus(),
-                domain.getPaymentStatus(),
-                domain.getPaymentMethod()
-
+                domain.getFailureMessages()
         );
+        
+        // Set createdAt from domain if available
+        if (domain.getCreatedAt() != null) {
+            orderEntity.setCreatedAt(domain.getCreatedAt());
+        }
+        
         List<OrderItemEntity> itemEntities = domain.getOrderItems().stream().map(item -> {
             OrderItemEntity orderItemEntity = new OrderItemEntity(
-                    item.getProductId(), item.getQuantity().getValue(), item.getPrice()
+                    orderEntity,
+                    item.getProductId().getValue(),
+                    item.getQuantity().getValue(),
+                    item.getPrice().getAmount()
             );
-
-            orderItemEntity.setOrder(orderEntity);
             return orderItemEntity;
         }).collect(Collectors.toList());
 

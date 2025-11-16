@@ -22,10 +22,10 @@ public class RestaurantOrder {
     }
 
     public RestaurantOrder(
-                          OrderId orderId,
-                          RestaurantId restaurantId,
-                          Money totalAmount,
-                          OrderApprovalStatus approvalStatus) {
+            OrderId orderId,
+            RestaurantId restaurantId,
+            Money totalAmount,
+            OrderApprovalStatus approvalStatus) {
         this.orderId = orderId;
         this.restaurantId = restaurantId;
         this.totalAmount = totalAmount;
@@ -34,10 +34,10 @@ public class RestaurantOrder {
     }
 
     public RestaurantOrder(RestaurantOrderId id,
-                          OrderId orderId,
-                          RestaurantId restaurantId,
-                          Money totalAmount,
-                          OrderApprovalStatus approvalStatus) {
+            OrderId orderId,
+            RestaurantId restaurantId,
+            Money totalAmount,
+            OrderApprovalStatus approvalStatus) {
         this.id = id;
         this.orderId = orderId;
         this.restaurantId = restaurantId;
@@ -47,13 +47,13 @@ public class RestaurantOrder {
     }
 
     public RestaurantOrder(RestaurantOrderId id,
-                          OrderId orderId,
-                          RestaurantId restaurantId,
-                          Money totalAmount,
-                          OrderApprovalStatus approvalStatus,
-                          String rejectionReason,
-                          OffsetDateTime createdAt,
-                          OffsetDateTime updatedAt) {
+            OrderId orderId,
+            RestaurantId restaurantId,
+            Money totalAmount,
+            OrderApprovalStatus approvalStatus,
+            String rejectionReason,
+            OffsetDateTime createdAt,
+            OffsetDateTime updatedAt) {
         this.id = id;
         this.orderId = orderId;
         this.restaurantId = restaurantId;
@@ -128,13 +128,13 @@ public class RestaurantOrder {
         this.updatedAt = updatedAt;
     }
 
-    public void markRejected(String reason){
+    public void markRejected(String reason) {
         this.approvalStatus = OrderApprovalStatus.REJECTED;
         this.setRejectionReason(reason);
         this.updatedAt = OffsetDateTime.now();
     }
 
-    public void markApproved(){
+    public void markApproved() {
         this.approvalStatus = OrderApprovalStatus.APPROVED;
         this.updatedAt = OffsetDateTime.now();
     }

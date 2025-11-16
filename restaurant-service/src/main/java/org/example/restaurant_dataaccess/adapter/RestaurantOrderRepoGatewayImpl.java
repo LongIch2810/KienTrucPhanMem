@@ -10,6 +10,7 @@ import org.example.restaurant_domain.restaurant_domain_core.valueobject.Restaura
 import org.example.restaurant_domain.restaurant_domain_core.valueobject.RestaurantOrderId;
 import org.springframework.stereotype.Component;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -51,5 +52,13 @@ public class RestaurantOrderRepoGatewayImpl implements RestaurantOrderRepoGatewa
     @Override
     public boolean existsById(RestaurantOrderId restaurantOrderId) {
         return restaurantOrderRepository.existsById(restaurantOrderId.getValue());
+    }
+
+    @Override
+    public void update(RestaurantOrder restaurantOrder) {
+        RestaurantOrderEntity restaurantOrderEntity = RestaurantOrderMapper.toEntity(restaurantOrder);
+        restaurantOrderEntity.setId(restaurantOrder.getId().getValue());
+        restaurantOrderEntity.setUpdatedAt(OffsetDateTime.now());
+        restaurantOrderRepository.save(restaurantOrderEntity);
     }
 }

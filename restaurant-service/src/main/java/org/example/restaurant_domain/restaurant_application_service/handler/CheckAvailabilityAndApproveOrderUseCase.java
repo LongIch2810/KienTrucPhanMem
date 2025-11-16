@@ -59,7 +59,7 @@ public class CheckAvailabilityAndApproveOrderUseCase implements ICheckAvailabili
         RestaurantOrder newRestaurantOrder = new RestaurantOrder(new OrderId(event.getOrderId()),
                 new RestaurantId(event.getRestaurantId()), new Money(event.getAmount()),
                 OrderApprovalStatus.PENDING);
-        this.restaurantOrderRepoGateway.save(newRestaurantOrder);
+        newRestaurantOrder = this.restaurantOrderRepoGateway.save(newRestaurantOrder);
         if (restaurantExists.isEmpty()) {
             rejectOrder(newRestaurantOrder, "Restaurant is not active");
             return;
@@ -83,32 +83,30 @@ public class CheckAvailabilityAndApproveOrderUseCase implements ICheckAvailabili
 
     private void rejectOrder(RestaurantOrder restaurantOrder, String reason) {
         restaurantOrder.markRejected(reason);
-        RestaurantOrder savedOrder = this.restaurantOrderRepoGateway.save(restaurantOrder);
-
+        this.restaurantOrderRepoGateway.update(restaurantOrder);
         RestaurantRejectedEvent rejectedEvent = new RestaurantRejectedEvent(
-                savedOrder.getId().getValue(),
-                savedOrder.getOrderId().getValue(),
-                savedOrder.getRestaurantId().getValue(),
-                savedOrder.getTotalAmount().getAmount(),
-                savedOrder.getApprovalStatus().name(),
-                savedOrder.getRejectionReason(),
-                savedOrder.getCreatedAt(),
-                savedOrder.getUpdatedAt());
+                restaurantOrder.getId().getValue(),
+                restaurantOrder.getOrderId().getValue(),
+                restaurantOrder.getRestaurantId().getValue(),
+                restaurantOrder.getTotalAmount().getAmount(),
+                restaurantOrder.getApprovalStatus().name(),
+                restaurantOrder.getRejectionReason(),
+                restaurantOrder.getCreatedAt(),
+                restaurantOrder.getUpdatedAt());
         domainEventPublisher.publish(rejectedEvent);
     }
 
     private void approveOrder(RestaurantOrder restaurantOrder) {
         restaurantOrder.markApproved();
-        RestaurantOrder savedOrder = this.restaurantOrderRepoGateway.save(restaurantOrder);
-
+        this.restaurantOrderRepoGateway.update(restaurantOrder);
         RestaurantApprovedEvent approvedEvent = new RestaurantApprovedEvent(
-                savedOrder.getId().getValue(),
-                savedOrder.getOrderId().getValue(),
-                savedOrder.getRestaurantId().getValue(),
-                savedOrder.getTotalAmount().getAmount(),
-                savedOrder.getApprovalStatus().name(),
-                savedOrder.getCreatedAt(),
-                savedOrder.getUpdatedAt());
+                restaurantOrder.getId().getValue(),
+                restaurantOrder.getOrderId().getValue(),
+                restaurantOrder.getRestaurantId().getValue(),
+                restaurantOrder.getTotalAmount().getAmount(),
+                restaurantOrder.getApprovalStatus().getValue(),
+                restaurantOrder.getCreatedAt(),
+                restaurantOrder.getUpdatedAt());
         domainEventPublisher.publish(approvedEvent);
     }
 

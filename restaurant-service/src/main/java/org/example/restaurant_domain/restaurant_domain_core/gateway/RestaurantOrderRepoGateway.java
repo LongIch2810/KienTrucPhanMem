@@ -10,8 +10,14 @@ import java.util.Optional;
 
 public interface RestaurantOrderRepoGateway {
     RestaurantOrder save(RestaurantOrder restaurantOrder);
+
     Optional<RestaurantOrder> findById(RestaurantOrderId restaurantOrderId);
+
     Optional<RestaurantOrder> findByOrderId(OrderId orderId);
+
     List<RestaurantOrder> findAllByRestaurantId(RestaurantId restaurantId);
+
     boolean existsById(RestaurantOrderId restaurantOrderId);
+
+    void update(RestaurantOrder restaurantOrder);
 }
